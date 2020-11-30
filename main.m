@@ -54,7 +54,7 @@
 % 45 (2012) p. 335–338. doi:10.1016/j.enbuild.2011.10.054
 %
 % [2] X. Li et al. Application of the Entropy Weight and TOPSIS Method in
-% Safety Evaluation of Coal Mines, Procedia Engineerin. 
+% Safety Evaluation of Coal Mines, Procedia Engineering. 
 % doi:10.1016/j.proeng.2011.11.2410
 %
 clearvars;
@@ -84,7 +84,7 @@ velocity_boundaries=[0.1, 3]; % velocity [m/s]
 % Estimate best design for all these flow rates.
 % m_dot_plot=[0.2, 0.3, 0.4, 0.5, 0.5, 0.7, 0.8, 0.9, 1, 2, 3, 4, 5, ...
 %     6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400];
-m_dot_plot=[0.1, 0.2, 0.3, 0.5];
+m_dot_plot=[0.1, 1];
 %% common diameters array
 % This array is needed to plot the pipes chart. No influence on the
 % optimization problem.
@@ -98,13 +98,14 @@ for k=1:numel(m_dot_plot)
         rho, mu, roughness, D_min, D_max, velocity_boundaries);
     % these lines to give a feedback on how the calculation is proceeding.
     if exitflag(k) > 0
-        disp((strcat('run ', num2str(k), ' / ', num2str(numel(m_dot_plot)),' successful ')));
+        message=sprintf('run %d of %d successful',k, numel(m_dot_plot));
         % sum up all non-dominated designs in a cell arra, one for each
         % mass flow rate
         all_results(k,:)=results{k}(1,:);
     else
-        disp((strcat('run ', num2str(k), ' / ', num2str(numel(m_dot_plot)),' failed ')));
+        message=sprintf('run %d of %d failed',k, numel(m_dot_plot));
     end
+    disp(message);
 end
 %% save the best designs for each flow rate
 writetable(all_results, 'optimal_pipe_design.csv');
@@ -114,18 +115,18 @@ dp_name='dp [mm H2O/m]';
 d_name='d [mm]';
 % plot the "pipes chart"
 if numel(m_dot_plot) > 1
-plot_pipes_chart(m_dot_plot, rho, mu, D_plot, roughness, ...
-    [0.01, 1000], [0.1, max(m_dot_plot)]);
+    plot_pipes_chart(m_dot_plot, rho, mu, D_plot, roughness, ...
+        [0.01, 1000], [0.1, max(m_dot_plot)]);
+    %
+    % plot the best designs
+    for k=1:numel(m_dot_plot)
+        loglog(all_results.(dp_name)(k), all_results.m_dot(k),'xk');
+        hold on;
+        text(all_results.(dp_name)(k),  all_results.m_dot(k), ...
+            num2str(all_results.(d_name)(k)),'VerticalAlignment','bottom', ...
+            'HorizontalAlignment','left');
+    end
+    savefig('pipes_chart_with_optimal_designs.fig');
 else
-plot_pipes_chart(m_dot_plot, rho, mu, D_plot, roughness);
+    disp('pipes chart will not be plotted for only 1 flow rate point');
 end
-%
-% plot the best designs 
-for k=1:numel(m_dot_plot)
-    loglog(all_results.(dp_name)(k), all_results.m_dot(k),'xk');
-    hold on;
-    text(all_results.(dp_name)(k),  all_results.m_dot(k), ...
-        num2str(all_results.(d_name)(k)),'VerticalAlignment','bottom', ...
-        'HorizontalAlignment','left');
-end
-savefig('pipes_chart_with_optimal_designs.fig');
