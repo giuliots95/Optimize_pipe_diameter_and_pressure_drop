@@ -46,7 +46,31 @@
 % Finally, the best design for each flow rate is represented in the "pipe
 % chart", that the log-log chart commonly used by technicians to speed up
 % pipelines sizing. 
+%
+% CHANGE THE FLUID TYPE
+% This is an interesting direction for investigation. One should remember
+% that the practical log-log charts for pipe sizing are developed for a
+% single type of pipe (i.e. carbon steel or plastic pipes), expressing a
+% reasonable value of epsilon and operated with a well defined working
+% fluid (i.e. water or air are the most common). In few words, these charts
+% are not universal, but they are drawn depending from
+%   1. pipe material
+%   2. fluid properties (density & viscosity)
+%
+% Try to input the values of a tipical lubrication oil at design
+% temperature of 40 °C, which are: 
+%   - kinematic viscosity @ 40: 140 cSt
+%   - density @ 40: 950 kg/m^3
+% that give dynamic visocity of 144*0.95*10^-6 [Poiseuille = Pa*s]
+% use a plastic polymer pipe, with epsilon = 0.002*1e-3 [m] and feasable
+% oil speed between 0.05 and 2 [m/s].
 %   
+% Or try to solve the same problem for a fuel oil. For example consider:
+%   - kinematic viscosity @80: 985 kg/m^3
+%   - density @ 80: 985 cSt
+%   - high quality steel pipe, epsilon=0.01*1e-3;
+%   - admitted fluid velocity between 0.01 and 1.5 m/s
+%
 % References:
 %
 % [1] S. B. Genic, B. M. Jacimovic, V. B. Genic, Economic optimiztion of
@@ -60,14 +84,13 @@
 clearvars;
 clc;
 %% input data
-%m_dot=1; % the mass flow rate through the pipe [kg/s]
 rho=1000;       % fluid density constant [kg/m3] e.g. for water @ 20 °C
 mu=9*10^-4;     % fluid dynamic viscosity [Pa*s]
                 % this can also be expressed as mu=nu*rho, if the dynamic 
                 % viscosity is given. pay attention that these values 
                 % depend from the fluid temperature.
 
-roughness=0.5*1e-3;  % pipe rated absolute roughness [m]
+roughness=0.2*1e-3;  % pipe rated absolute roughness [m]
                      % 0.001*1e-3 for floor heating pipe [m]
                      % 0.05*1e9-3 steel pipe with fine surface [m]
                      % 0.5*1e-3 common steel pipe [m]
@@ -84,7 +107,7 @@ velocity_boundaries=[0.1, 3]; % velocity [m/s]
 % Estimate best design for all these flow rates.
 % m_dot_plot=[0.2, 0.3, 0.4, 0.5, 0.5, 0.7, 0.8, 0.9, 1, 2, 3, 4, 5, ...
 %     6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 300, 400];
-m_dot_plot=[0.1, 1];
+m_dot_plot=linspace(0.1, 1, 10);
 %% common diameters array
 % This array is needed to plot the pipes chart. No influence on the
 % optimization problem.
@@ -126,7 +149,7 @@ if numel(m_dot_plot) > 1
             num2str(all_results.(d_name)(k)),'VerticalAlignment','bottom', ...
             'HorizontalAlignment','left');
     end
-    savefig('pipes_chart_with_optimal_designs.fig');
+%     savefig('pipes_chart_with_optimal_designs.fig');
 else
     disp('pipes chart will not be plotted for only 1 flow rate point');
 end
